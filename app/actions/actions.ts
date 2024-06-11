@@ -174,7 +174,7 @@ export async function createMessage(message: message){
     const eventName = 'new-message'; // The name of the event to trigger
 
   // Trigger the event with the message details
-    pusher.trigger(channelName, eventName, {
+    await pusher.trigger(channelName, eventName, {
         message: message.message,
         userID: userData.id,
         userName: userData.name,
