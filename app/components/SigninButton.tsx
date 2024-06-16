@@ -36,6 +36,36 @@ const SigninButton = () => {
     }
   }, [session]);
 
+  const Notification = ({f , key} : { f: Notification; key: number; }) => {
+    const [removeingNotification , setRemoveingNotification] = useState(false)
+    const [removeNotification , setRemoveNotification] = useState(false)
+    return(
+      <div className={`mx-2 mt-2 w-[100% - 8px] dark:bg-gray-700 bg-gray-400  rounded items-center ${removeNotification ? `hidden` : `flex`}`}>
+              <Image alt="no img" width={25} height={25} src={f.senderImg ?? ""} 
+                className={` rounded-full`} />
+              <div>{f.senderName}</div>
+              <div className="m-1 opacity-60 ">{f.message}</div>
+              <div className="ml-auto flex ">
+                <button onClick={() => {
+                  setRemoveingNotification(true);
+                  createFriend(f.senderID , f.receiverID , f.id).then(()=>{
+                    setRemoveingNotification(false)
+                    setRemoveNotification(true)
+                  })
+                }} disabled={removeingNotification}
+                className="bg-green-600 p-1 px-2 rounded m-1 disabled:opacity-50 ">Appect</button>
+                <button onClick={() => {
+                  setRemoveingNotification(true);
+                  deletNotification(f.id).then(()=>{
+                    setRemoveingNotification(false)
+                    setRemoveNotification(true)
+                  })
+                }} disabled={removeingNotification}
+                className="bg-red-600 p-1 px-2 rounded m-1 disabled:opacity-50 ">Reject</button>
+              </div>
+      </div>
+    )
+  }
   
     return (
       <>
@@ -51,8 +81,8 @@ const SigninButton = () => {
             <div className="flex gap-1">
               <Link href="/newGroupe" 
                 className={`px-2 py-1 bg-slate-500 rounded text-gray-50 ${show} `} >+ group</Link>
-              <Link href="/newPerson" 
-                className={`px-2 py-1 bg-slate-500 rounded text-gray-50 ${show} `} >+ person</Link>
+              <Link href="/newFriend"
+                className={`px-2 py-1 bg-slate-500 rounded text-gray-50 ${show} `} >+ friend</Link>
             </div>
             <div className="flex gap-1 my-2 ">
               <button className={`px-2 py-1 bg-slate-500  rounded text-gray-50 ${show} `} ><ModeIco/></button>
@@ -79,16 +109,7 @@ const SigninButton = () => {
         </button>
         <div className="w-[80dvw] h-[80vh]  rounded dark:bg-zinc-800 bg-slate-300 flex flex-col ">
           {notifications.map((f:Notification)=> (
-            <div className=" mx-2 mt-2 w-[100% - 8px] dark:bg-gray-700 bg-gray-400  rounded flex items-center ">
-              <Image alt="no img" width={25} height={25} src={f.senderImg ?? ""} 
-                className={` rounded-full`} />
-              <div>{f.senderName}</div>
-              <div className="m-1">{f.message}</div>
-              <div className="ml-auto">
-                <button onClick={() => {createFriend(f.senderID , f.receiverID , f.id)}} className="bg-green-600 p-1 px-2 rounded m-1 ">Appect</button>
-                <button onClick={() => {deletNotification(f.id)}} className="bg-red-600 p-1 px-2 rounded m-1 ">Reject</button>
-              </div>
-            </div>
+            <Notification f={f} key={f.id} />
           ))}
         </div>
       </div>

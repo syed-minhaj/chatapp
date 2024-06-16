@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 
 
 export default function Home() {
+    const [sending , setSending] = useState(false)
     const [personEmail , setPersonEmail] = useState("")
     const [message , setMessage] = useState("")
     const { data: session } = useSession();
@@ -15,7 +16,12 @@ export default function Home() {
          senderEmail = session.user.email ;
     }
     function sendResquest(){
-        createNotification( senderEmail , personEmail , message) 
+        setSending(true)
+        createNotification( senderEmail , personEmail , message).then(()=>{
+            setSending(false)
+            setMessage("")
+            setPersonEmail("")
+        })
     }
 
     return(
@@ -27,10 +33,13 @@ export default function Home() {
                 <div className="flex flex-col ">
                     <div >email of friend </div>
                     <input  className="border-2 rounded-md border-yellow-900 mb-2 p-1 disabled:opacity-50" value={personEmail} onChange={(e:any) => setPersonEmail(e.target.value)} type="email"
-                    placeholder="*requried"/>
+                    placeholder="*requried" disabled={sending}/>
                     <input  className="border-2 rounded-md border-yellow-900 mb-2 p-1 disabled:opacity-50" value={message} onChange={(e:any) => setMessage(e.target.value)} type="text"
-                    placeholder="any message"/>
-                    <button onClick={()=>{sendResquest()}} className="p-2 px-4 w-fit ml-auto rounded bg-yellow-900 dark:bg-yellow-600"> Send Request </button>
+                    placeholder="any message" disabled={sending}/>
+                    <button onClick={()=>{sendResquest()}} disabled={sending} 
+                    className="p-2 px-4 w-fit ml-auto rounded bg-yellow-900 dark:bg-yellow-600 disabled:opacity-50">
+                        {sending ? "sending" : "send request"}
+                    </button>
                 </div>
             </div>
         </div>

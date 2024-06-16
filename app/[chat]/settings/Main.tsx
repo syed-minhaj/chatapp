@@ -94,7 +94,7 @@ export default function Main({usersID, chatID}: {usersID: number[], chatID: numb
                     <div >change room name </div>
                     <input  className="border-2 rounded-md border-yellow-900 p-1 disabled:opacity-50" value={roomName} onChange={(e:any) => setRoomName(e.target.value)} type="text"
                     placeholder="Enter new name" disabled={changeingName} />
-                    <button className="bg-yellow-900 text-white rounded-md  p-1 px-2 mx-2 disabled:opacity-50"
+                    <button className="bg-yellow-900 text-white rounded-md  p-1 px-2 m-2 sm:m-0 sm:mx-2 disabled:opacity-50"
                      onClick={onChangeName} disabled={changeingName} >Change</button>
                 </div>
                 <div>
