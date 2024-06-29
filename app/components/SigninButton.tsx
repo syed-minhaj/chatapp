@@ -55,7 +55,6 @@ const SigninButton = () => {
                         notifications.splice(i, 1);
                       }
                     });
-                    setRemoveingNotification(false)
                     setNotifications(notifications);
                   })
                 }} disabled={removeingNotification}
