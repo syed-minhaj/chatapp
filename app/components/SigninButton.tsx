@@ -38,9 +38,10 @@ const SigninButton = () => {
 
   const Notification = ({f , key} : { f: Notification; key: number; }) => {
     const [removeingNotification , setRemoveingNotification] = useState(false)
-    const [removeNotification , setRemoveNotification] = useState(false)
+    
     return(
-      <div className={`mx-2 mt-2 w-[100% - 8px] dark:bg-gray-700 bg-gray-400  rounded items-center ${removeNotification ? `hidden` : `flex`}`}>
+      
+      <div className={`mx-2 mt-2 w-[100% - 8px] dark:bg-gray-700 bg-gray-400  rounded items-center flex `}>
               <Image alt="no img" width={25} height={25} src={f.senderImg ?? ""} 
                 className={` rounded-full`} />
               <div>{f.senderName}</div>
@@ -49,21 +50,31 @@ const SigninButton = () => {
                 <button onClick={() => {
                   setRemoveingNotification(true);
                   createFriend(f.senderID , f.receiverID , f.id).then(()=>{
+                    notifications.forEach((n, i) => {
+                      if (n.id === f.id) {
+                        notifications.splice(i, 1);
+                      }
+                    });
                     setRemoveingNotification(false)
-                    setRemoveNotification(true)
+                    setNotifications(notifications);
                   })
                 }} disabled={removeingNotification}
                 className="bg-green-600 p-1 px-2 rounded m-1 disabled:opacity-50 ">Appect</button>
                 <button onClick={() => {
                   setRemoveingNotification(true);
                   deletNotification(f.id).then(()=>{
-                    setRemoveingNotification(false)
-                    setRemoveNotification(true)
+                    notifications.forEach((n, i) => {
+                      if (n.id === f.id) {
+                        notifications.splice(i, 1);
+                      }
+                    });
+                    setNotifications(notifications);
                   })
                 }} disabled={removeingNotification}
                 className="bg-red-600 p-1 px-2 rounded m-1 disabled:opacity-50 ">Reject</button>
               </div>
       </div>
+    
     )
   }
   

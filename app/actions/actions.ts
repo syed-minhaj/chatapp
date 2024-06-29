@@ -105,6 +105,7 @@ export async function createFriend(id1: number , id2: number , notiId : number){
     addUserToRoom(id1 , roomId)
     addUserToRoom(id2 , roomId)
     deletNotification(notiId)
+    revalidatePath("/")
     
 }
 
