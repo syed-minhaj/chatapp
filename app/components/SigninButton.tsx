@@ -5,6 +5,7 @@ import ModeIco from "./Mode";
 import Link from "next/link";
 import Image from 'next/image'
 import { createFriend, deletNotification, getUser, getnotifications } from "../actions/actions";
+import { revalidatePath } from "next/cache";
 
 interface Notification {
   id: number;
@@ -50,12 +51,10 @@ const SigninButton = () => {
                 <button onClick={() => {
                   setRemoveingNotification(true);
                   createFriend(f.senderID , f.receiverID , f.id).then(()=>{
-                    notifications.forEach((n, i) => {
-                      if (n.id === f.id) {
-                        notifications.splice(i, 1);
-                      }
-                    });
-                    setNotifications(notifications);
+                    const updatedNotifications = notifications.filter(n => n.id!== f.id);
+                    setNotifications(updatedNotifications);
+                    setRemoveingNotification(false);
+
                   })
                 }} disabled={removeingNotification}
                 className="bg-green-600 p-1 px-2 rounded m-1 disabled:opacity-50 ">Appect</button>
