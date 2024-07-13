@@ -2,7 +2,7 @@
 import { revalidatePath } from "next/cache"
 import { prisma } from "./../lib/prisma"
 import Pusher from 'pusher';
-import { cachedDataVersionTag } from "v8";
+import Cryptr from "cryptr";
 
 // Assuming you have initialized Pusher somewhere in your server setup
 const pusher = new Pusher({
@@ -175,9 +175,13 @@ export async function createMessage(message: message){
         id: 99999999,
         name: "dfs",
     }
+    
+    const secretKey = process.env.NEXT_PUBLIC_PUSHER_SECRET as string;
+    const newCryptr = new Cryptr(secretKey);
+    
     await prisma.message.create({
         data:{
-            message: message.message,
+            message: newCryptr.encrypt(message.message),
             roomID: message.roomID,
             userID: userData.id ,
         }
