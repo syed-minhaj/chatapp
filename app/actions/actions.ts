@@ -20,6 +20,15 @@ interface message {
 }
 
 export async function createNotification(senderEmail: any , ReseverEmail: string , message: string){
+    // if ReseverEmail is not in the database then return a message to senderEmail
+    const datad = await prisma.user.findFirst({
+        where: {
+            email: ReseverEmail,
+        },
+    })
+    if(datad == null){
+        return "no user found"
+    }
     await prisma.notification.create({
         data:{
             message : message,
@@ -31,7 +40,7 @@ export async function createNotification(senderEmail: any , ReseverEmail: string
             } ,
         },
     })
-    // if ReseverEmail is not in the database then send message to senderEmail
+    return "user found"
     
 } 
 

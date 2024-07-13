@@ -1,14 +1,12 @@
 "use client"
 import { useEffect, useState } from "react";
-import { useRouter } from 'next/navigation'; // Import useRouter
-import Appbar from "../components/Appbar";
+import { useRouter } from 'next/navigation'; 
 import resizeTextarea from "../api/resizeTextarea";
 import Cryptr from 'cryptr';
-import { createMessage, getUser, getUserID } from "../actions/actions";
+import { createMessage,  getUserID } from "../actions/actions";
 import Pusher from 'pusher-js';
 import { useSession } from "next-auth/react";
 import { truncate } from "fs";
-import SigninButton from "../components/SigninButton";
 
 interface message { 
     id: number; 
@@ -40,6 +38,9 @@ const Main = ({ usersID, roomID, messages }: { usersID: number[], roomID: number
 
     const { data: session } = useSession();
     let myemail: string;
+    const secretKey = process.env.NEXT_PUBLIC_PUSHER_SECRET as string;
+    const newCryptr = new Cryptr(secretKey);
+
 
     if (session && session.user) {
         myemail = session.user.email || "";
@@ -72,7 +73,7 @@ const Main = ({ usersID, roomID, messages }: { usersID: number[], roomID: number
             setNewMessages((prev) => prev.filter((m) => m.userName != "test-test-test-123-test"))
             setNewMessages((prev) => [...prev, {
                 id: prev.length + 1,
-                message: data.message,
+                message: newCryptr.decrypt(data.message),
                 userID: data.userID,
                 roomID: roomID,
                 userName: data.userName,
@@ -89,6 +90,7 @@ const Main = ({ usersID, roomID, messages }: { usersID: number[], roomID: number
    
 
     const submit = () => {
+        
         setNewMessages((prev) => [...prev, {
                 id: prev.length + 1,
                 message: message,
@@ -96,8 +98,9 @@ const Main = ({ usersID, roomID, messages }: { usersID: number[], roomID: number
                 roomID: roomID,
                 userName: "test-test-test-123-test",
         }]);
+        const encryptedMessage = newCryptr.encrypt(message);
         createMessage({
-            message: message,
+            message: encryptedMessage,
             userEmail: myemail,
             roomID: roomID,
         });

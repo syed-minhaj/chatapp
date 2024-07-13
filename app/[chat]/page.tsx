@@ -4,13 +4,22 @@ import { prisma } from "../lib/prisma";
 import Main from "./Main";
 import RoomName from "../components/RoomName";
 import Link from "next/link"
+import Cryptr from "cryptr";
 
 interface pageProps{
     params: {chat:  number|null|undefined }
 }
 export default async function Home({params}: pageProps) {
     
-    const messages = await getMessages(Number(params.chat))
+    const secretKey = process.env.NEXT_PUBLIC_PUSHER_SECRET as string;
+    const newCryptr = new Cryptr(secretKey);
+    const unmessages = await getMessages(Number(params.chat))
+    const messages = unmessages.map(message => {
+        return {
+            ...message,
+            message: newCryptr.decrypt(message.message)
+        }
+    })
     
     const usersID = await prisma.room.findUnique({
         where:{id : Number(params.chat) },
