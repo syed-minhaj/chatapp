@@ -1,5 +1,3 @@
-
-     
 "use client"
 import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation'; // Import useRouter
@@ -71,7 +69,7 @@ const Main = ({ usersID, roomID, messages }: { usersID: number[], roomID: number
     useEffect(() => {
         const channel = pusher.subscribe(`room-${roomID}`);
         channel.bind('new-message', (data: any) => {
-            setNewMessages((prev) => prev.slice(0,-1))
+            setNewMessages((prev) => prev.filter((m) => m.userName != "test-test-test-123-test"))
             setNewMessages((prev) => [...prev, {
                 id: prev.length + 1,
                 message: data.message,

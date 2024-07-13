@@ -3,7 +3,6 @@ import SigninButton from "../components/SigninButton";
 import { prisma } from "../lib/prisma";
 import Main from "./Main";
 import RoomName from "../components/RoomName";
-import RoomName1 from "../components/RoomName";
 import Link from "next/link"
 
 interface pageProps{

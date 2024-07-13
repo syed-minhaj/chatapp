@@ -31,6 +31,8 @@ export async function createNotification(senderEmail: any , ReseverEmail: string
             } ,
         },
     })
+    // if ReseverEmail is not in the database then send message to senderEmail
+    
 } 
 
 export async function getnotifications(ReseverEmail: any){
