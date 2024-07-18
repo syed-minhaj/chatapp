@@ -52,9 +52,14 @@ export default function Main({usersID, chatID}: {usersID: number[], chatID: numb
         const getFriends = async () => {
             const friends = await getFriendsByUser(myID ?? 0);
             setFriends(friends)
+            const f = friends.filter((friend) => !usersID.includes(friend.id) )[0]
+            if(f){
+                setUserID(f.id)
+            }
         }
         getFriends();
-    })
+    }, [myID])
+
     const onChangeName = () => {
         setChangeingName(true)
         changeRoomName(chatID , roomName).then(() => {
@@ -62,10 +67,16 @@ export default function Main({usersID, chatID}: {usersID: number[], chatID: numb
             setChangeingName(false)
         })
     }
+
     const addUserToRoomByID = () => {
         setAddingUser(true)
         addUserToRoom(Number(userID) ?? 0, chatID).then(() => {
-            setUserID(null)
+            setFriends((prev) => prev.filter((friend) => friend.id !== Number(userID)))
+            const ff = friends.filter((friend) => friend.id !== Number(userID))
+            const f  = ff.filter((f) => !usersID.includes(f.id) )[0]
+            if(f){
+                setUserID(f.id)
+            }
             setAddingUser(false)
         })
     }
