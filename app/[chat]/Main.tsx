@@ -2,10 +2,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation'; 
 import resizeTextarea from "../api/resizeTextarea";
-//import Cryptr from 'cryptr';
 import { createMessage,  getUserID } from "../actions/actions";
-import Pusher from 'pusher-js';
 import { useSession } from "next-auth/react";
+import io from "socket.io-client";
+import { Socket  } from "socket.io-client";
+
 
 interface message { 
     id: number; 
@@ -22,9 +23,7 @@ interface userInfo {
     email: string | null;
 }
 
-const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY || "", {
-    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || "",
-});
+
 
 const Main = ({ usersID, roomID, messages }: { usersID: number[], roomID: number, messages: message[] }) => {
     
@@ -33,6 +32,7 @@ const Main = ({ usersID, roomID, messages }: { usersID: number[], roomID: number
     const [newMessages, setNewMessages] = useState<message[]>(messages);
     const [message, setMessage] = useState("");
     const [myID, setMyID] = useState<number>();
+    const [socket, setSocket] = useState<Socket>();
     const [isLoading, setIsLoading] = useState(true);
 
     const { data: session } = useSession();
@@ -64,9 +64,17 @@ const Main = ({ usersID, roomID, messages }: { usersID: number[], roomID: number
         });
     }, [usersID, myID]);
 
+    
     useEffect(() => {
-        const channel = pusher.subscribe(`room-${roomID}`);
-        channel.bind('new-message', (data: any) => {
+        const nodejs_url = process.env.NEXT_PUBLIC_NODEJS_BACKEND_URL || "";
+        const socket = io(nodejs_url);
+        setSocket(socket)
+        socket.on("connection" , () => {
+            console.log("connected")
+            
+        });
+        socket.emit('join', `room-${roomID}`);
+        socket.on('new-message', (data: any) => {
             setNewMessages((prev) => prev.filter((m) => m.userName != "test-test-test-123-test"))
             setNewMessages((prev) => [...prev, {
                 id: prev.length + 1,
@@ -77,11 +85,10 @@ const Main = ({ usersID, roomID, messages }: { usersID: number[], roomID: number
             }]);
             
         });
-
         return () => {
-            channel.unbind();
-            pusher.unsubscribe(`room-${roomID}`);
+            socket.disconnect();
         };
+            
     }, [roomID]);
 
    
@@ -99,6 +106,24 @@ const Main = ({ usersID, roomID, messages }: { usersID: number[], roomID: number
             message: message,
             userEmail: myemail,
             roomID: roomID,
+        }).then(() => {
+            if (socket) {
+                socket.emit('sendMessage', {
+                    message: message,
+                    userID: myID,
+                    userName: session?.user?.name ?? "",
+                    roomID: roomID
+                });
+                setNewMessages((prev) => prev.filter((m) => m.userName != "test-test-test-123-test"))
+                setNewMessages((prev) => [...prev, {
+                    id: prev.length + 1,
+                    message: message,
+                    userID: (myID) ? myID : 0,
+                    roomID: roomID,
+                    userName: session?.user?.name ?? "",
+                }]);
+
+            }
         });
         setMessage("");
     };

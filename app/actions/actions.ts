@@ -4,14 +4,6 @@ import { prisma } from "./../lib/prisma"
 import Pusher from 'pusher';
 import Cryptr from "cryptr";
 
-// Assuming you have initialized Pusher somewhere in your server setup
-const pusher = new Pusher({
-  appId: process.env.NEXT_PUBLIC_PUSHER_APP_ID || "",
-  key: process.env.NEXT_PUBLIC_PUSHER_KEY || "",
-  secret: process.env.NEXT_PUBLIC_PUSHER_SECRET || "",
-  cluster: "mt1", // Replace 'your_cluster' with your actual cluster name
-  useTLS: true,
-});
 
 interface message { 
     message: string; 
@@ -179,22 +171,17 @@ export async function createMessage(message: message){
     const secretKey = process.env.NEXT_PUBLIC_PUSHER_SECRET as string;
     const newCryptr = new Cryptr(secretKey);
     
-    await prisma.message.create({
+    const respsonse = await prisma.message.create({
         data:{
             message: newCryptr.encrypt(message.message),
             roomID: message.roomID,
             userID: userData.id ,
         }
     })
-    const channelName = `room-${message.roomID}`; // Assuming you're using room IDs to identify channels
-    const eventName = 'new-message'; // The name of the event to trigger
 
-  // Trigger the event with the message details
-    await pusher.trigger(channelName, eventName, {
-        message: message.message,
-        userID: userData.id,
-        userName: userData.name,
-    });
+    
+    
+    
     
 }
 
