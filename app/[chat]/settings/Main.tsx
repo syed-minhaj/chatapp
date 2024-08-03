@@ -1,8 +1,6 @@
 "use client";
-import { addUserToRoom , changeRoomName, createNotification, getFriendsByUser, getUserID } from "@/app/actions/actions";
+import { addUserToRoom , changeRoomName } from "@/app/actions/actions";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
-import {useRouter} from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface user { 
@@ -12,16 +10,13 @@ interface user {
     email: string | null; 
 }
 
-export default function Main({usersID, chatID}: {usersID: number[], chatID: number}) {
+export default function Main({usersID, chatID , ofriends}: {usersID: number[], chatID: number, ofriends: user[]}) {
 
-    const [myID, setMyID] = useState<number>();
-    const [isLoading, setIsLoading] = useState(true);
     const [roomName , setRoomName] = useState("")
     const [userID , setUserID] = useState<number | null>(null)
     const [friends , setFriends] = useState<user[]>([])
     const [addingUser, setAddingUser] = useState(false)
     const [changeingName, setChangeingName] = useState(false)
-    const router = useRouter();
 
     const { data: session } = useSession();
     let myemail: string;
@@ -30,36 +25,16 @@ export default function Main({usersID, chatID}: {usersID: number[], chatID: numb
         myemail = session.user.email || "";
     }
 
-    const getMyID = async () => {
-        const id = await getUserID(myemail);
-        setMyID(id)
-        
-    };
+    
 
     useEffect(() => {
-        getMyID().then(() => {
-            if(myID == null){return}
-            else if ( !usersID.includes(myID)) {
-                router.push("/"); 
-            }else{
-                setIsLoading(false)
-                
-            }
-        });
-    }, [usersID, myID]);
-
-    useEffect(() => {
-        const getFriends = async () => {
-            const friends = await getFriendsByUser(myID ?? 0);
-            setFriends(friends)
-            const f = friends.filter((friend) => !usersID.includes(friend.id) )[0]
-            if(f){
-                setUserID(f.id)
-            }
+        setFriends(ofriends);
+        const f = ofriends.filter((friend) => !usersID.includes(friend.id))[0];
+        if (f) {
+            setUserID(f.id);
         }
-        getFriends();
-    }, [myID])
-
+    }, [ofriends, usersID]);   
+   
     const onChangeName = () => {
         setChangeingName(true)
         changeRoomName(chatID , roomName).then(() => {
@@ -81,24 +56,10 @@ export default function Main({usersID, chatID}: {usersID: number[], chatID: numb
         })
     }
 
-    
-
-    if (isLoading) {
-        return (
-                <div className="pt-40  bg-gray-50 dark:bg-zinc-800 min-h-[100dvh] flex flex-row  justify-center items-start ">
-                    <div className="flex flex-col items-center justify-around ">
-                        <div>Loading...</div>
-                    </div>
-                </div>
-        );
-        
-    }
-    // in html create a drop box with search to find all friends 
-
     return (
         <div className="bg-gray-50 dark:bg-zinc-800 min-h-[100dvh]">
             <div className=" flex   gap-4 p-4  bg-gray-50 dark:bg-zinc-800 w-screen h-[70px]">
-                <Link href={`/${chatID}`} className="flex  text-yellow-950 dark:text-yellow-600 ">Back</Link>
+                <button onClick={() => window.history.back()} className="flex  text-yellow-950 dark:text-yellow-600 ">Back</button>
             </div>
             <div className=" p-20 flex flex-col justify-center items-center gap-2">
                 <div className="  ">

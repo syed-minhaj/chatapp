@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import ModeIco from "./Mode";
 import Link from "next/link";
 import Image from 'next/image'
@@ -22,9 +22,9 @@ interface userInfo {
   email: string | null;
 } 
 
-const SigninButton = () => {
+const UserIco = () => {
   const { data: session } = useSession();
-  if (session && session.user) {
+  
   const [show , setShow] = useState('hidden')
   const [showNoti , setShowNoti] = useState(false)
   const [notifications , setNotifications] = useState<Notification[]>([])
@@ -85,7 +85,7 @@ const SigninButton = () => {
                                 else{setShow('hidden')}
                             }}
              className="flex rounded-full  p-1 ml-auto ">
-                <Image className="rounded-full" src={session.user.image ?? ""} alt="no img" height={30} width={30} />
+                <Image className="rounded-full" src={session?.user?.image ?? ""} alt="no img" height={30} width={30} />
             </button>
             <div className="flex gap-1">
               <Link href="/newGroupe" 
@@ -124,9 +124,9 @@ const SigninButton = () => {
       </div>
       </>
     );
-  }
+  
 };
 
 
 
-export default SigninButton;
+export default UserIco;

@@ -1,9 +1,7 @@
 "use client"
-import { useEffect, useState } from "react";
-import { useRouter } from 'next/navigation'; 
+import { useEffect, useState } from "react"; 
 import resizeTextarea from "../api/resizeTextarea";
-import { createMessage,  getUserID } from "../actions/actions";
-import { useSession } from "next-auth/react";
+import { createMessage } from "../actions/actions";
 import io from "socket.io-client";
 import { Socket  } from "socket.io-client";
 
@@ -21,50 +19,15 @@ interface userInfo {
     name: string | null;
     image: string | null;
     email: string | null;
-}
+} 
 
 
-
-const Main = ({ usersID, roomID, messages }: { usersID: number[], roomID: number, messages: message[] }) => {
+const Main = ({ roomID, messages , user }: { roomID: number, messages: message[] , user: userInfo | null}) => {
     
-    const router = useRouter(); // Initialize useRouter
-
     const [newMessages, setNewMessages] = useState<message[]>(messages);
     const [message, setMessage] = useState("");
-    const [myID, setMyID] = useState<number>();
     const [socket, setSocket] = useState<Socket>();
-    const [isLoading, setIsLoading] = useState(true);
 
-    const { data: session } = useSession();
-    let myemail: string;
-
-
-    if (session && session.user) {
-        myemail = session.user.email || "";
-    }
-
-    const getMyID = async () => {
-        const id = await getUserID(myemail);
-        setMyID(id)
-        
-    };
-
-    useEffect(() => {
-        getMyID().then(() => {
-            if(myID == null){return}
-            else if ( !usersID.includes(myID)) {
-                router.push("/"); 
-            }else{
-                setIsLoading(false)
-                setTimeout(() => {
-                    resizeTextarea()    
-                }, 10);
-                
-            }
-        });
-    }, [usersID, myID]);
-
-    
     useEffect(() => {
         const nodejs_url = process.env.NEXT_PUBLIC_NODEJS_BACKEND_URL || "";
         const socket = io(nodejs_url);
@@ -91,36 +54,33 @@ const Main = ({ usersID, roomID, messages }: { usersID: number[], roomID: number
             
     }, [roomID]);
 
-   
-
     const submit = () => {
-        
         setNewMessages((prev) => [...prev, {
                 id: prev.length + 1,
                 message: message,
-                userID: (myID ) ? myID : 0,
+                userID: user?.id || 0,
                 roomID: roomID,
                 userName: "test-test-test-123-test",
         }]);
         createMessage({
             message: message,
-            userEmail: myemail,
+            userEmail: user?.email || "",
             roomID: roomID,
         }).then(() => {
             if (socket) {
                 socket.emit('sendMessage', {
                     message: message,
-                    userID: myID,
-                    userName: session?.user?.name ?? "",
+                    userID: user?.id || 0,
+                    userName: user?.name ?? "",
                     roomID: roomID
                 });
                 setNewMessages((prev) => prev.filter((m) => m.userName != "test-test-test-123-test"))
                 setNewMessages((prev) => [...prev, {
                     id: prev.length + 1,
                     message: message,
-                    userID: (myID) ? myID : 0,
+                    userID: user?.id || 0,
                     roomID: roomID,
-                    userName: session?.user?.name ?? "",
+                    userName: user?.name ?? "",
                 }]);
 
             }
@@ -128,38 +88,27 @@ const Main = ({ usersID, roomID, messages }: { usersID: number[], roomID: number
         setMessage("");
     };
     
-    
-    
-    if (isLoading) {
-        return (
-                <div className="pt-40   flex flex-row  justify-center items-start ">
-                    <div className="flex flex-col items-center justify-around ">
-                        <div>Loading...</div>
-                    </div>
-                </div>
-        );
-        
-    }
-    
+    useEffect(() => {
+        resizeTextarea()
+    }, [])
 
-    return(
-        
+    return(     
             <div>
                 <div className=" w-full  flex justify-center  ">
                     <div className="flex flex-col w-11/12 sm:w-[80%] mt-4 gap-3 overflow-y-auto scrollbar-thumb-blue 
                     scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch">
                         {newMessages.map((m: message , index:number) => (
                         <div className="">  
-                            <div className={'flex  w-full ' + (m.userID == myID ? 'justify-end' : "" )}>
+                            <div className={'flex  w-full ' + (m.userID ==  user?.id ? 'justify-end' : "" )}>
                                 <div className={'px-4 py-2 rounded-lg flex items-end w-fit ' +
-                                ( m.userID == myID ? ' bg-gray-200 text-gray-900 dark:bg-gray-600 dark:text-gray-50 ':
+                                ( m.userID == user?.id ? ' bg-gray-200 text-gray-900 dark:bg-gray-600 dark:text-gray-50 ':
                                 '  bg-yellow-950 dark:bg-yellow-600 text-gray-50 ') +
                                 ( m.userName == "test-test-test-123-test" ? ` opacity-50 bg-opacity-50 ` : " " ) }>
                                     {m.message} 
                                 </div>
                             </div>
-                            <div className={'flex  w-full text-xs text-opacity-65 ' + (m.userID == myID ? 'justify-end' : "" )
-                                + (m.userID == myID  ? ' hidden ' : "")
+                            <div className={'flex  w-full text-xs text-opacity-65 ' + (m.userID == user?.id ? 'justify-end' : "" )
+                                + (m.userID == user?.id  ? ' hidden ' : "")
                             }>{m.userName}</div>
                         </div>
                         ))}
