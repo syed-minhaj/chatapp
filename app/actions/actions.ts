@@ -178,10 +178,7 @@ export async function createMessage(message: message){
             userID: userData.id ,
         }
     })
-
-    
-    
-    
+    revalidatePath(`/${message.roomID}`)
     
 }
 
