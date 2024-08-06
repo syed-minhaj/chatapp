@@ -1,7 +1,7 @@
 "use client"
-import { useEffect, useState } from "react"; 
+import { useEffect, useState , useRef } from "react"; 
 import resizeTextarea from "../api/resizeTextarea";
-import { createMessage } from "../actions/actions";
+import { createMessage , deleteMessage as deleteMessageAPI} from "../actions/actions";
 import io from "socket.io-client";
 import { Socket  } from "socket.io-client";
 
@@ -27,7 +27,9 @@ const Main = ({ roomID, messages , user }: { roomID: number, messages: message[]
     const [newMessages, setNewMessages] = useState<message[]>(messages);
     const [message, setMessage] = useState("");
     const [socket, setSocket] = useState<Socket>();
-
+    const [showDeleteButtons, setShowDeleteButtons] = useState(Object.assign({}, ...messages.map(obj => ({ [obj.id]: false }))));
+    const messageRefs = useRef<HTMLDivElement[]>([]);
+    
     useEffect(() => {
         const nodejs_url = process.env.NEXT_PUBLIC_NODEJS_BACKEND_URL || "";
         const socket = io(nodejs_url);
@@ -40,13 +42,16 @@ const Main = ({ roomID, messages , user }: { roomID: number, messages: message[]
         socket.on('new-message', (data: any) => {
             setNewMessages((prev) => prev.filter((m) => m.userName != "test-test-test-123-test"))
             setNewMessages((prev) => [...prev, {
-                id: prev.length + 1,
+                id: data.id,
                 message: data.message,
                 userID: data.userID,
                 roomID: roomID,
                 userName: data.userName,
             }]);
             
+        });
+        socket.on('delete-message', (data: any) => {
+            setNewMessages(prev => prev.filter((m) => m.id != data.id))
         });
         return () => {
             socket.disconnect();
@@ -66,17 +71,19 @@ const Main = ({ roomID, messages , user }: { roomID: number, messages: message[]
             message: message,
             userEmail: user?.email || "",
             roomID: roomID,
-        }).then(() => {
+            orId : newMessages.length +1 ,
+        }).then((res: {id: number , orId: number}) => {
             if (socket) {
                 socket.emit('sendMessage', {
+                    id: res.id,
                     message: message,
                     userID: user?.id || 0,
                     userName: user?.name ?? "",
                     roomID: roomID
                 });
-                setNewMessages((prev) => prev.filter((m) => m.userName != "test-test-test-123-test"))
+                setNewMessages((prev) => prev.filter((m) => m.id != res.orId && m.userName != "test-test-test-123-test"))
                 setNewMessages((prev) => [...prev, {
-                    id: prev.length + 1,
+                    id: res.id,
                     message: message,
                     userID: user?.id || 0,
                     roomID: roomID,
@@ -88,8 +95,57 @@ const Main = ({ roomID, messages , user }: { roomID: number, messages: message[]
         setMessage("");
     };
     
+    
+    const deleteMessage = (id: number) => {
+        setShowDeleteButtons((prev: any) => ({...prev, [id] : false}))
+        deleteMessageAPI(id).then(() => {
+            if(socket){
+                socket.emit('deleteMessage', {
+                    id: id,
+                    roomID: roomID,
+                });
+            }
+            setNewMessages(prev => prev.filter((m) => m.id != id))
+        });
+    };
+
+    let isHolding = false;
+    const [messRefId , setMessRefId] = useState<null | number>(null) 
+    const duringhold = (id:number) => {
+        setShowDeleteButtons((prev: any) => ({...prev, [id] : true}))
+        setMessRefId(id)
+    }
+    const starthold = (id:number) => {
+        if (isHolding) {return;}
+        isHolding = true;
+        setTimeout(() => {
+            if(isHolding){
+                duringhold(id)
+            }
+            
+        }, 333);
+    }
+    const stophold = () => {
+        isHolding = false;
+    }
     useEffect(() => {
-        resizeTextarea()
+        const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+            if(!messRefId){return;}
+            const messageClickofId = messageRefs.current[messRefId].contains(event.target as HTMLElement)
+            if (!messageClickofId) {
+                setShowDeleteButtons(Object.assign({}, ...messages.map(obj => ({ [obj.id]: false }))))
+            }
+        };
+        document.addEventListener("click", handleClickOutside);
+        document.addEventListener("touchstart", handleClickOutside);
+        return () => {
+            document.removeEventListener("click", handleClickOutside);
+            document.removeEventListener("touchstart", handleClickOutside);
+        };
+    }, [messRefId])
+    
+    useEffect(() => {
+        resizeTextarea()       
     }, [])
 
     return(     
@@ -97,13 +153,21 @@ const Main = ({ roomID, messages , user }: { roomID: number, messages: message[]
                 <div className=" w-full  flex justify-center  ">
                     <div className="flex flex-col w-11/12 sm:w-[80%] mt-4 gap-3 overflow-y-auto scrollbar-thumb-blue 
                     scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch">
-                        {newMessages.map((m: message , index:number) => (
-                        <div className="">  
-                            <div className={'flex  w-full ' + (m.userID ==  user?.id ? 'justify-end' : "" )}>
+                        {newMessages.map((m: message ) => (
+                        <div className="" key={m.id}>
+                            <div className={'flex w-full justify-end ' + (m.userID ==  user?.id ? ' ' : "flex-row-reverse" )} 
+                            onMouseDown={() => starthold(m.id)} onMouseUp={() => stophold()} onTouchStart={() => starthold(m.id)} onTouchEnd={() => stophold()}
+                            
+                            ref={(el) => {if(el){messageRefs.current[m.id] = el }}}>
+                                {showDeleteButtons[m.id] && m.userID == user?.id && (
+                                    <button onClick={() => deleteMessage(m.id)} className="bg-red-600 bg-opacity-10 hover:bg-opacity-25 
+                                     text-red-600 border-red-600 border px-2 rounded-md mx-2 disabled:opacity-50 ">Delete</button>
+                                )}
                                 <div className={'px-4 py-2 rounded-lg flex items-end w-fit ' +
                                 ( m.userID == user?.id ? ' bg-gray-200 text-gray-900 dark:bg-gray-600 dark:text-gray-50 ':
                                 '  bg-yellow-950 dark:bg-yellow-600 text-gray-50 ') +
-                                ( m.userName == "test-test-test-123-test" ? ` opacity-50 bg-opacity-50 ` : " " ) }>
+                                ( m.userName == "test-test-test-123-test" ? ` opacity-50 bg-opacity-50 ` : " " ) } onContextMenu={(e :any) => {e.preventDefault(); duringhold(m.id)}}
+                                >
                                     {m.message} 
                                 </div>
                             </div>

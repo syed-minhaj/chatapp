@@ -1,4 +1,4 @@
-import { getMessages, getUser } from "../actions/actions";
+import { getMessages } from "../actions/actions";
 import UserIco from "../components/UserIco";
 import { prisma } from "../lib/prisma";
 import Main from "./Main";
@@ -6,6 +6,7 @@ import Cryptr from "cryptr";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import BackButton from "../components/BackButton";
+
 
 interface pageProps{
     params: {chat:  number|null|undefined }

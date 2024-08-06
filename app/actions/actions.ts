@@ -9,6 +9,7 @@ interface message {
     message: string; 
     userEmail: string; 
     roomID: number; 
+    orId: number;
 }
 
 export async function createNotification(senderEmail: any , ReseverEmail: string , message: string){
@@ -179,7 +180,16 @@ export async function createMessage(message: message){
         }
     })
     revalidatePath(`/${message.roomID}`)
+    return {id : respsonse.id , orId : message.orId}
     
+}
+
+export async function deleteMessage(id: number){
+    await prisma.message.delete({
+        where:{
+            id: id,
+        }
+    })
 }
 
 export async function createRoomAndAddUser(roomName: string , userEmail: string){
