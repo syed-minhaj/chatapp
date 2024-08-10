@@ -9,17 +9,13 @@ import { PrismaClient } from "@prisma/client";
 export default async function Home() {
   
   const prisma = new PrismaClient();
-  const session = await getServerSession();
-  
+  const session = await getServerSession(); 
   let myemail: string = session?.user?.email || "";
   const rooms = await getRoomsByUser(myemail);
-
-
   function getName(roomName: string){
     const [number1, number2] = roomName.split("/")
     return {number1 : Number(number1), number2 : Number(number2)}
   }
-
   function getUserInfo(usersID: number[]){
     function getUser(id: number){
       return prisma.user.findUnique({
@@ -37,7 +33,6 @@ export default async function Home() {
     const user2 =  getUser(usersID[1])
     return {user1 : user1 , user2 : user2 }
   }
-
   const newRooms = await Promise.all(rooms.map( async (room) => {
     if(room.name === null){return {id : room.id , name : "no name" , img : null}}
       
@@ -52,7 +47,6 @@ export default async function Home() {
     return {id : room.id , name : room.name , img : null , isNotRoom : false  }
   
   }))
-
   const RoomComponent = () => {
     return (
       <>
@@ -61,11 +55,11 @@ export default async function Home() {
         relative cross justify-center items-center border-2 flex
          rounded border-yellow-900 w-full h-32 bg-gray-100 dark:bg-zinc-700 hover:bg-gray-200 dark:hover:bg-zinc-600">
             <div className="text-sm flex flex-col items-center justify-center">
-            			{room.isNotRoom ? <img className="rounded-full" src={room.img? room.img : ""} height={30} width={30} /> : ""}
+            			{room.isNotRoom ? <img className="rounded-full" src={room.img? room.img : ""} alt={""} height={30} width={30} /> : ""}
         					{room.name}
         		</div>
         </Link>
-     ))}
+      ))}
      </>
     )
   }

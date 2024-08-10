@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { signOut, useSession } from "next-auth/react";
 import ModeIco from "./Mode";
 import Link from "next/link";
@@ -28,6 +28,7 @@ const UserIco = () => {
   const [show , setShow] = useState('hidden')
   const [showNoti , setShowNoti] = useState(false)
   const [notifications , setNotifications] = useState<Notification[]>([])
+  const notificationRef = useRef<HTMLDivElement>(null)
   
   useEffect(() => {
     if (session && session.user) {
@@ -36,6 +37,21 @@ const UserIco = () => {
       });
     }
   }, [session]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+        if(!showNoti ){return;}
+        if (!notificationRef.current?.contains(event.target as HTMLElement)) {
+            setShowNoti(false)
+        }
+    };
+    document.addEventListener("click", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+        document.removeEventListener("click", handleClickOutside);
+        document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [notificationRef , showNoti])
 
   const Notification = ({f , key} : { f: Notification; key: number; }) => {
     const [removeingNotification , setRemoveingNotification] = useState(false)
@@ -95,7 +111,7 @@ const UserIco = () => {
             </div>
             <div className="flex gap-1 my-2 ">
               <button className={`px-2 py-1 bg-slate-500  rounded text-gray-50 ${show} `} ><ModeIco/></button>
-              <button className={`px-2 py-1 bg-slate-500  rounded text-gray-50 ${show} `} onClick={()=>{setShowNoti(!showNoti)}}>
+              <button className={`px-2 py-1 bg-slate-500  rounded text-gray-50 ${show} `} onClick={()=>{setShowNoti(!showNoti); setShow('hidden')}}>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
   <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0M3.124 7.5A8.969 8.969 0 0 1 5.292 3m13.416 0a8.969 8.969 0 0 1 2.168 4.5" />
 </svg>
@@ -116,7 +132,8 @@ const UserIco = () => {
 </svg>
 
         </button>
-        <div className="w-[80dvw] h-[80vh]  rounded dark:bg-zinc-800 bg-slate-300 flex flex-col ">
+        <div className="w-[80dvw] h-[80vh]  rounded dark:bg-zinc-800 bg-slate-300 flex flex-col "
+        ref={notificationRef}>
           {notifications.map((f:Notification)=> (
             <Notification f={f} key={f.id} />
           ))}
