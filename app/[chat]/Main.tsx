@@ -137,10 +137,8 @@ const Main = ({ roomID, messages , user }: { roomID: number, messages: message[]
             }
         };
         document.addEventListener("click", handleClickOutside);
-        document.addEventListener("touchstart", handleClickOutside);
         return () => {
             document.removeEventListener("click", handleClickOutside);
-            document.removeEventListener("touchstart", handleClickOutside);
         };
     }, [messRefId])
     

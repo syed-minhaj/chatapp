@@ -46,10 +46,8 @@ const UserIco = () => {
         }
     };
     document.addEventListener("click", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
     return () => {
         document.removeEventListener("click", handleClickOutside);
-        document.removeEventListener("touchstart", handleClickOutside);
     };
   }, [notificationRef , showNoti])
 
