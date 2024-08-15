@@ -51,7 +51,7 @@ export default async function Home() {
     return (
       <>
       {newRooms?.map((room) => (
-        <Link href={`/${room.id}`} className="
+        <Link prefetch={false} href={`/${room.id}`} className="
         relative cross justify-center items-center border-2 flex
          rounded border-yellow-900 w-full h-32 bg-gray-100 dark:bg-zinc-700 hover:bg-gray-200 dark:hover:bg-zinc-600">
             <div className="text-sm flex flex-col items-center justify-center">
