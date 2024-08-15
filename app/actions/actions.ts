@@ -184,12 +184,13 @@ export async function createMessage(message: message){
     
 }
 
-export async function deleteMessage(id: number){
+export async function deleteMessage(id: number , roomID: number){
     await prisma.message.delete({
         where:{
             id: id,
         }
     })
+    revalidatePath(`/${roomID}`)
 }
 
 export async function createRoomAndAddUser(roomName: string , userEmail: string){

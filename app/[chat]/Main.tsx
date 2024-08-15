@@ -98,7 +98,7 @@ const Main = ({ roomID, messages , user }: { roomID: number, messages: message[]
     
     const deleteMessage = (id: number) => {
         setShowDeleteButtons((prev: any) => ({...prev, [id] : false}))
-        deleteMessageAPI(id).then(() => {
+        deleteMessageAPI(id , roomID).then(() => {
             if(socket){
                 socket.emit('deleteMessage', {
                     id: id,
