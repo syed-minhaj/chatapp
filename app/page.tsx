@@ -51,14 +51,14 @@ export default async function Home() {
     return (
       <>
       {newRooms?.map((room) => (
-        <Link prefetch={false} href={`/${room.id}`} className="
+        <a key={room.id}  href={`/${room.id}`} className="
         relative cross justify-center items-center border-2 flex
-         rounded border-yellow-900 w-full h-32 bg-gray-100 dark:bg-zinc-700 hover:bg-gray-200 dark:hover:bg-zinc-600">
+        rounded border-yellow-900 w-full h-32 bg-gray-100 dark:bg-zinc-700 hover:bg-gray-200 dark:hover:bg-zinc-600">
             <div className="text-sm flex flex-col items-center justify-center">
-            			{room.isNotRoom ? <img className="rounded-full" src={room.img? room.img : ""} alt={""} height={30} width={30} /> : ""}
-        					{room.name}
-        		</div>
-        </Link>
+                  {room.isNotRoom ? <img className="rounded-full" src={room.img? room.img : ""} alt={""} height={30} width={30} /> : ""}
+                  {room.name}
+            </div>
+        </a>
       ))}
      </>
     )
