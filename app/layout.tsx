@@ -10,6 +10,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "chatapp",
   description: "chatapp",
+  icons : '/favicon.ico',
 };
 
 export default function RootLayout({
